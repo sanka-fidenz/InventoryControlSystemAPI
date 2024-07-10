@@ -2,6 +2,8 @@
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace InventoryControlSystemAPI.Migrations
 {
     /// <inheritdoc />
@@ -153,6 +155,24 @@ namespace InventoryControlSystemAPI.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { "1", "Operator" },
+                    { "2", "Manager" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "Name", "RoleId" },
+                values: new object[,]
+                {
+                    { "2e755959-59fa-4998-9faf-7a6caaf13a10", "Manager", "2" },
+                    { "52a80ab7-3a8c-4378-a52a-cbc4363040b2", "Operator", "1" }
                 });
 
             migrationBuilder.CreateIndex(

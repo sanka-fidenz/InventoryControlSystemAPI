@@ -52,5 +52,15 @@ public class AppDbContext : DbContext
             .HasMany(r => r.Users)
             .WithOne(u => u.Role)
             .HasForeignKey(u => u.RoleId);
+
+        modelBuilder.Entity<Role>().HasData(
+            new Role { Id = "1", Name = "Operator" },
+            new Role { Id = "2", Name = "Manager" }
+        );
+
+        modelBuilder.Entity<User>().HasData(
+            new User { Id = Guid.NewGuid().ToString(), RoleId = "1", Name = "Operator" },
+            new User { Id = Guid.NewGuid().ToString(), RoleId = "2", Name = "Manager" }
+        );
     }
 }

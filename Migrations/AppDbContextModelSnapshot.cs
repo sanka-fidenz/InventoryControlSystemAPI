@@ -116,6 +116,18 @@ namespace InventoryControlSystemAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "1",
+                            Name = "Operator"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            Name = "Manager"
+                        });
                 });
 
             modelBuilder.Entity("Store", b =>
@@ -168,6 +180,20 @@ namespace InventoryControlSystemAPI.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "52a80ab7-3a8c-4378-a52a-cbc4363040b2",
+                            Name = "Operator",
+                            RoleId = "1"
+                        },
+                        new
+                        {
+                            Id = "2e755959-59fa-4998-9faf-7a6caaf13a10",
+                            Name = "Manager",
+                            RoleId = "2"
+                        });
                 });
 
             modelBuilder.Entity("Inventory", b =>
