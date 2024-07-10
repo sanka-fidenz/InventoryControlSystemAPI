@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryControlSystemAPI.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Operator,Manager")]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductController : ControllerBase

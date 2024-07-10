@@ -10,6 +10,10 @@ var Configuration = builder.Configuration;
 var jwtIssuer = Configuration.GetSection("Jwt:Issuer").Get<string>();
 var jwtKey = Configuration.GetSection("Jwt:Key").Get<string>();
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddControllers().AddJsonOptions(options =>
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -24,10 +28,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddControllers().AddJsonOptions(options =>
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("OperatorOnly", policy => policy.RequireRole("Operator"));
+    options.AddPolicy("ManagerOnly", policy => policy.RequireRole("Manager"));
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
