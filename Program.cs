@@ -29,11 +29,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("OperatorOnly", policy => policy.RequireRole("Operator"));
-    options.AddPolicy("ManagerOnly", policy => policy.RequireRole("Manager"));
-});
+builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {

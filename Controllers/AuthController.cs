@@ -1,39 +1,44 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace JwtInDotnetCore.Controllers
+namespace InventoryControlSystemAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LoginController : ControllerBase
+    public class AuthController : ControllerBase
     {
-        private IConfiguration _config;
-        public LoginController(IConfiguration config)
+        private readonly IConfiguration _config;
+        private readonly AppDbContext _context;
+
+        public AuthController(IConfiguration config, AppDbContext context)
         {
             _config = config;
+            _context = context;
         }
 
         [HttpPost]
         public IActionResult LoginUser(Login login)
         {
-            if (login.username == "username" && login.Password == "password")
+            var user = _context.Users.Where(u => u.Name == login.username).Include(u => u.Role).FirstOrDefault();
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            if (login.Password == "password")
             {
                 var claims = new List<Claim>
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, login.username), // replace with userId
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(ClaimTypes.Name, login.username)
+                    new Claim(ClaimTypes.Name, login.username),
+                    new Claim(ClaimTypes.Role, user.Role.Name)
                 };
-
-                var roles = new List<string>() { "Operator", "Manager" };
-
-                foreach (var role in roles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, role));
-                }
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
