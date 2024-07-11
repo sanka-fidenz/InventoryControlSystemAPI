@@ -4,12 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryControlSystemAPI.Controllers
 {
-    // [Authorize(Roles = "Operator,Manager")]
+    [Authorize(Roles = "Operator,Manager")]
     [ApiController]
     [Route("api/[controller]")]
     public class ProductController : ControllerBase
     {
-
         private readonly AppDbContext _context;
 
         public ProductController(AppDbContext context)

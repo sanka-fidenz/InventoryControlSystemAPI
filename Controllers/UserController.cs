@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryControlSystemAPI.Controllers
 {
+    [Authorize(Roles = "Manager")]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
