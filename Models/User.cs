@@ -6,3 +6,9 @@ public class User
     public string RoleId { get; set; }
     public Role Role { get; set; } = null!;
 }
+
+public class UserDto
+{
+    public string Name { get; set; }
+    public string RoleId { get; set; }
+}

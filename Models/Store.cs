@@ -6,3 +6,8 @@ public class Store
     public ICollection<Inventory> Inventories { get; } = new List<Inventory>();
     public ICollection<StoreUser> StoreUsers { get; set; }
 }
+
+public class StoreDto
+{
+    public string LocationId { get; set; }
+}
