@@ -7,8 +7,3 @@ public class Inventory
     public string StoreId { get; set; }
     public Store Store { get; set; } = null!;
 }
-
-public class InventoryDto
-{
-    public int Count { get; set; }
-}

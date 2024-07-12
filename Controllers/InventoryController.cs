@@ -1,6 +1,7 @@
+using InventoryControlSystemAPI.DTOs;
+using InventoryControlSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace InventoryControlSystemAPI.Controllers
 {
@@ -9,34 +10,25 @@ namespace InventoryControlSystemAPI.Controllers
     [Route("api/[controller]")]
     public class InventoryController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly IInventoryService _inventoryService;
 
-        public InventoryController(AppDbContext context)
+        public InventoryController(IInventoryService categoryService)
         {
-            _context = context;
+            _inventoryService = categoryService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Inventory>>> GetInventories([FromQuery] string? storeId, [FromQuery] string? productId)
         {
-            var query = _context.Inventories.AsQueryable();
+            var categories = await _inventoryService.GetInventories(storeId, productId);
 
-            if (!string.IsNullOrEmpty(storeId))
-            {
-                query = query.Where(inventory => inventory.StoreId == storeId);
-            }
-            if (!string.IsNullOrEmpty(productId))
-            {
-                query = query.Where(inventory => inventory.ProductId == productId);
-            }
-
-            return await query.ToListAsync();
+            return Ok(categories);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Inventory>> GetInventory(string id)
         {
-            var inventory = await _context.Inventories.FindAsync(id);
+            var inventory = await _inventoryService.GetInventory(id);
 
             if (inventory == null)
             {
@@ -47,54 +39,35 @@ namespace InventoryControlSystemAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Inventory>> CreateInventory(InventoryDto inventory)
+        public async Task<ActionResult<Inventory>> CreateInventory(InventoryCreateDto newInventory)
         {
-            var newInventory = new Inventory
-            {
-                Id = Guid.NewGuid().ToString(),
-                Count = inventory.Count
-            };
+            var inventory = await _inventoryService.CreateInventory(newInventory);
 
-            _context.Inventories.Add(newInventory);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetInventory), new { id = newInventory.Id }, newInventory);
+            return CreatedAtAction(nameof(GetInventory), new { id = inventory.Id }, inventory);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateInventory(string id, InventoryDto inventory)
+        public async Task<IActionResult> UpdateInventory(string id, InventoryUpdateDto updatedInventory)
         {
-            var existingInventory = await _context.Inventories.FindAsync(id);
-            if (existingInventory == null)
+            var inventory = await _inventoryService.UpdateInventory(id, updatedInventory);
+
+            if (inventory == null)
             {
                 return NotFound();
             }
 
-            existingInventory.Count = inventory.Count;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException) when (!_context.Inventories.Any(e => e.Id == id))
-            {
-                return NotFound();
-            }
-
-            return NoContent();
+            return Ok(inventory);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocation(string id)
         {
-            var existingLocation = await _context.Locations.FindAsync(id);
-            if (existingLocation == null)
+            var success = await _inventoryService.DeleteInventory(id);
+
+            if (!success)
             {
                 return NotFound();
             }
-
-            _context.Locations.Remove(existingLocation);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
