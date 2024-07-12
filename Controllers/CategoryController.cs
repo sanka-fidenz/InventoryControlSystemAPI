@@ -1,6 +1,7 @@
+using InventoryControlSystemAPI.DTOs;
+using InventoryControlSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace InventoryControlSystemAPI.Controllers
 {
@@ -9,23 +10,24 @@ namespace InventoryControlSystemAPI.Controllers
     [Route("api/[controller]")]
     public class CategoryController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ICategoryService _categoryService;
 
-        public CategoryController(AppDbContext context)
+        public CategoryController(ICategoryService categoryService)
         {
-            _context = context;
+            _categoryService = categoryService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
-            return await _context.Categories.ToListAsync();
+            var categories = await _categoryService.GetCategories();
+            return Ok(categories);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Category>> GetCategory(string id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _categoryService.GetCategory(id);
 
             if (category == null)
             {
@@ -36,54 +38,34 @@ namespace InventoryControlSystemAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Category>> CreateCategory(CategoryDto category)
+        public async Task<ActionResult<Category>> CreateCategory(CategoryDto newCategory)
         {
-            var newCategory = new Category
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = category.Name
-            };
-
-            _context.Categories.Add(newCategory);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetCategory), new { id = newCategory.Id }, newCategory);
+            var category = await _categoryService.CreateCategory(newCategory);
+            return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(string id, CategoryDto category)
+        public async Task<IActionResult> UpdateCategory(string id, CategoryDto updatedCategory)
         {
-            var existingCategory = await _context.Categories.FindAsync(id);
-            if (existingCategory == null)
+            var category = await _categoryService.UpdateCategory(id, updatedCategory);
+
+            if (category == null)
             {
                 return NotFound();
             }
 
-            existingCategory.Name = category.Name;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException) when (!_context.Categories.Any(e => e.Id == id))
-            {
-                return NotFound();
-            }
-
-            return NoContent();
+            return Ok(category);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(string id)
         {
-            var existingCategory = await _context.Categories.FindAsync(id);
-            if (existingCategory == null)
+            var success = await _categoryService.DeleteCategory(id);
+
+            if (!success)
             {
                 return NotFound();
             }
-
-            _context.Categories.Remove(existingCategory);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
