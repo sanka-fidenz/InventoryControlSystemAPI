@@ -1,9 +1,6 @@
+using InventoryControlSystemAPI.DTOs;
+using InventoryControlSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace InventoryControlSystemAPI.Controllers
 {
@@ -11,49 +8,30 @@ namespace InventoryControlSystemAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IConfiguration _config;
-        private readonly AppDbContext _context;
+        private readonly IAuthService _authService;
 
-        public AuthController(IConfiguration config, AppDbContext context)
+        public AuthController(IAuthService authService)
         {
-            _config = config;
-            _context = context;
+            _authService = authService;
         }
 
         [HttpPost]
-        public IActionResult LoginUser(Login login)
+        public IActionResult LoginUser(AuthDto credential)
         {
-            var user = _context.Users.Where(u => u.Name == login.username).Include(u => u.Role).FirstOrDefault();
+            var user = _authService.GetUserWithRole(credential);
 
             if (user == null)
             {
                 return NotFound("User not found");
             }
 
-            if (login.Password == "password")
+            if (!_authService.IsPasswordMatched(credential))
             {
-                var claims = new List<Claim>
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(ClaimTypes.Name, login.username),
-                    new Claim(ClaimTypes.Role, user.Role.Name)
-                };
-
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-                var token = new JwtSecurityToken(
-                    issuer: _config["Jwt:Issuer"],
-                    audience: _config["Jwt:Issuer"],
-                    claims: claims,
-                    expires: DateTime.Now.AddMinutes(30),
-                    signingCredentials: creds);
-
-                return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+                return Unauthorized("Invalid password");
             }
 
-            return Unauthorized("Invalid password");
+            return Ok(_authService.GenerateToken(user));
+
         }
     }
 }
