@@ -1,6 +1,7 @@
+using InventoryControlSystemAPI.DTOs;
+using InventoryControlSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace InventoryControlSystemAPI.Controllers
 {
@@ -9,23 +10,24 @@ namespace InventoryControlSystemAPI.Controllers
     [Route("api/[controller]")]
     public class ProductController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IProductService _productService;
 
-        public ProductController(AppDbContext context)
+        public ProductController(IProductService productService)
         {
-            _context = context;
+            _productService = productService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            return await _context.Products.ToListAsync();
+            var products = await _productService.GetProducts();
+            return Ok(products);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(string id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productService.GetProduct(id);
 
             if (product == null)
             {
@@ -36,65 +38,36 @@ namespace InventoryControlSystemAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Product>> CreateProduct(ProductDto product)
+        public async Task<ActionResult<Product>> CreateProduct(ProductCreateDto newProduct)
         {
-            var newProduct = new Product
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = product.Name,
-                Price = product.Price,
-                CategoryId = product.CategoryId
-            };
-
-            _context.Products.Add(newProduct);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetProduct), new { id = newProduct.Id }, newProduct);
+            var product = await _productService.CreateProduct(newProduct);
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(string id, ProductDto product)
+        public async Task<IActionResult> UpdateProduct(string id, ProductUpdateDto updatedProduct)
         {
-            var existingProduct = await _context.Products.FindAsync(id);
-            if (existingProduct == null)
+            var product = await _productService.UpdateProduct(id, updatedProduct);
+
+            if (product == null)
             {
                 return NotFound();
             }
 
-            existingProduct.Name = product.Name;
-            existingProduct.Price = product.Price;
-            existingProduct.CategoryId = product.CategoryId;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException) when (!ProductExists(id))
-            {
-                return NotFound();
-            }
-
-            return NoContent();
+            return Ok(product);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(string id)
         {
-            var existingProduct = await _context.Products.FindAsync(id);
-            if (existingProduct == null)
+            var success = await _productService.DeleteProduct(id);
+
+            if (!success)
             {
                 return NotFound();
             }
 
-            _context.Products.Remove(existingProduct);
-            await _context.SaveChangesAsync();
-
             return NoContent();
-        }
-
-        private bool ProductExists(string id)
-        {
-            return _context.Products.Any(e => e.Id == id);
         }
     }
 }

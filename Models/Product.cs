@@ -7,10 +7,3 @@ public class Product
     public Category Category { get; set; } = null!;
     public ICollection<Inventory> Inventories { get; } = new List<Inventory>();
 }
-
-public class ProductDto
-{
-    public string Name { get; set; }
-    public int Price { get; set; }
-    public string CategoryId { get; set; }
-}
