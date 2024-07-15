@@ -1,6 +1,7 @@
+using InventoryControlSystemAPI.DTOs;
+using InventoryControlSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace InventoryControlSystemAPI.Controllers
 {
@@ -9,23 +10,24 @@ namespace InventoryControlSystemAPI.Controllers
     [Route("api/[controller]")]
     public class LocationController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly ILocationService _locationService;
 
-        public LocationController(AppDbContext context)
+        public LocationController(ILocationService locationService)
         {
-            _context = context;
+            _locationService = locationService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Location>>> GetLocations()
         {
-            return await _context.Locations.ToListAsync();
+            var categories = await _locationService.GetLocations();
+            return Ok(categories);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Location>> GetLocation(string id)
         {
-            var location = await _context.Locations.FindAsync(id);
+            var location = await _locationService.GetLocation(id);
 
             if (location == null)
             {
@@ -36,58 +38,35 @@ namespace InventoryControlSystemAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Location>> CreateLocation(LocationDto location)
+        public async Task<ActionResult<Location>> CreateLocation(LocationDto newLocation)
         {
-            var newLocation = new Location
-            {
-                Id = Guid.NewGuid().ToString(),
-                AddressLine1 = location.AddressLine1,
-                AddressLine2 = location.AddressLine2,
-                AddressLine3 = location.AddressLine3
-            };
+            var location = await _locationService.CreateLocation(newLocation);
 
-            _context.Locations.Add(newLocation);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetLocation), new { id = newLocation.Id }, newLocation);
+            return CreatedAtAction(nameof(GetLocation), new { id = location.Id }, location);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLocation(string id, LocationDto location)
+        public async Task<IActionResult> UpdateLocation(string id, LocationDto updatedLocation)
         {
-            var existingLocation = await _context.Locations.FindAsync(id);
-            if (existingLocation == null)
+            var location = await _locationService.UpdateLocation(id, updatedLocation);
+
+            if (location == null)
             {
                 return NotFound();
             }
 
-            existingLocation.AddressLine1 = location.AddressLine1;
-            existingLocation.AddressLine2 = location.AddressLine2;
-            existingLocation.AddressLine3 = location.AddressLine3;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException) when (!_context.Locations.Any(l => l.Id == id))
-            {
-                return NotFound();
-            }
-
-            return NoContent();
+            return Ok(location);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocation(string id)
         {
-            var existingLocation = await _context.Locations.FindAsync(id);
-            if (existingLocation == null)
+            var success = await _locationService.DeleteLocation(id);
+
+            if (!success)
             {
                 return NotFound();
             }
-
-            _context.Locations.Remove(existingLocation);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
