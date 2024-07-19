@@ -23,7 +23,7 @@ namespace InventoryControlSystemAPI.Services
             return await _context.Locations.FindAsync(id);
         }
 
-        public async Task<Location> CreateLocation(LocationDto Location)
+        public async Task<Location> CreateLocation(LocationCreateDto Location)
         {
             var newLocation = new Location
             {
@@ -38,7 +38,7 @@ namespace InventoryControlSystemAPI.Services
             return newLocation;
         }
 
-        public async Task<Location?> UpdateLocation(string id, LocationDto updatedLocation)
+        public async Task<Location?> UpdateLocation(string id, LocationUpdateDto updatedLocation)
         {
             var existingLocation = await GetLocation(id);
             if (existingLocation == null)

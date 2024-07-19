@@ -38,7 +38,7 @@ namespace InventoryControlSystemAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Location>> CreateLocation(LocationDto newLocation)
+        public async Task<ActionResult<Location>> CreateLocation(LocationCreateDto newLocation)
         {
             var location = await _locationService.CreateLocation(newLocation);
 
@@ -46,7 +46,7 @@ namespace InventoryControlSystemAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLocation(string id, LocationDto updatedLocation)
+        public async Task<IActionResult> UpdateLocation(string id, LocationUpdateDto updatedLocation)
         {
             var location = await _locationService.UpdateLocation(id, updatedLocation);
 

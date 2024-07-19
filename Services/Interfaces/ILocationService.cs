@@ -6,8 +6,8 @@ namespace InventoryControlSystemAPI.Services.Interfaces
     {
         Task<IEnumerable<Location>> GetLocations();
         Task<Location?> GetLocation(string id);
-        Task<Location> CreateLocation(LocationDto newLocation);
-        Task<Location?> UpdateLocation(string id, LocationDto updatedLocation);
+        Task<Location> CreateLocation(LocationCreateDto newLocation);
+        Task<Location?> UpdateLocation(string id, LocationUpdateDto updatedLocation);
         Task<bool> DeleteLocation(string id);
     }
 }
