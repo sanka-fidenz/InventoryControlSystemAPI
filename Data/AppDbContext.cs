@@ -6,9 +6,12 @@ public class AppDbContext : DbContext
 
     public DbSet<Category> Categories { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
+    public DbSet<InventoryProduct> InventoryProducts { get; set; }
     public DbSet<Location> Locations { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<Purchase> Purchases { get; set; }
     public DbSet<Role> Roles { get; set; }
+    public DbSet<Sales> Saless { get; set; }
     public DbSet<Store> Stores { get; set; }
     public DbSet<StoreUser> StoreUsers { get; set; }
     public DbSet<User> Users { get; set; }
@@ -21,19 +24,27 @@ public class AppDbContext : DbContext
             .HasForeignKey(p => p.CategoryId);
 
         modelBuilder.Entity<Product>()
-            .HasMany(p => p.Inventories)
+            .HasMany(p => p.InventoryProducts)
             .WithOne(i => i.Product)
             .HasForeignKey(i => i.ProductId);
 
-        modelBuilder.Entity<Store>()
-            .HasMany(s => s.Inventories)
-            .WithOne(i => i.Store)
-            .HasForeignKey(i => i.StoreId);
+        modelBuilder.Entity<Inventory>()
+            .HasMany(p => p.InventoryProducts)
+            .WithOne(i => i.Inventory)
+            .HasForeignKey(i => i.InventoryId);
+
+        modelBuilder.Entity<Inventory>()
+            .HasOne(i => i.Store)
+            .WithOne(s => s.Inventory)
+            .HasForeignKey<Inventory>(i => i.StoreId);
 
         modelBuilder.Entity<Store>()
             .HasOne(s => s.Location)
             .WithOne(l => l.Store)
             .HasForeignKey<Store>(s => s.LocationId);
+
+        modelBuilder.Entity<InventoryProduct>()
+            .HasKey(ip => new { ip.ProductId, ip.InventoryId });
 
         modelBuilder.Entity<StoreUser>()
             .HasKey(su => new { su.StoreId, su.UserId });
@@ -52,6 +63,26 @@ public class AppDbContext : DbContext
             .HasMany(r => r.Users)
             .WithOne(u => u.Role)
             .HasForeignKey(u => u.RoleId);
+
+        modelBuilder.Entity<Sales>()
+            .HasOne(s => s.Product)
+            .WithMany(i => i.Sales)
+            .HasForeignKey(s => s.ProductId);
+
+        modelBuilder.Entity<Sales>()
+            .HasOne(s => s.Store)
+            .WithMany(s => s.Sales)
+            .HasForeignKey(s => s.StoreId);
+
+        modelBuilder.Entity<Purchase>()
+            .HasOne(s => s.Product)
+            .WithMany(i => i.Purchases)
+            .HasForeignKey(s => s.ProductId);
+
+        modelBuilder.Entity<Purchase>()
+            .HasOne(s => s.Store)
+            .WithMany(s => s.Purchases)
+            .HasForeignKey(s => s.StoreId);
 
         modelBuilder.Entity<Role>().HasData(
             new Role { Id = "1", Name = "Operator" },

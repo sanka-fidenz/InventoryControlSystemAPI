@@ -53,13 +53,13 @@ namespace InventoryControlSystemAPI.Services
 
         public async Task<bool> DeleteCategory(string id)
         {
-            var Category = await GetCategory(id);
-            if (Category == null)
+            var category = await GetCategory(id);
+            if (category == null)
             {
                 return false;
             }
 
-            _context.Categories.Remove(Category);
+            _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
 
             return true;

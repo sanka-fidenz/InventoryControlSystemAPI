@@ -21,10 +21,10 @@ namespace InventoryControlSystemAPI.Services
             {
                 query = query.Where(inventory => inventory.StoreId == storeId);
             }
-            if (!string.IsNullOrEmpty(productId))
-            {
-                query = query.Where(inventory => inventory.ProductId == productId);
-            }
+            // if (!string.IsNullOrEmpty(productId))
+            // {
+            //     query = query.Where(inventory => inventory.ProductId == productId);
+            // }
 
             return await query.ToListAsync();
         }
@@ -39,8 +39,8 @@ namespace InventoryControlSystemAPI.Services
             var newInventory = new Inventory
             {
                 Id = Guid.NewGuid().ToString(),
-                Count = inventory.Count,
-                ProductId = inventory.ProductId,
+                // Count = inventory.Count,
+                // ProductId = inventory.ProductId,
                 StoreId = inventory.StoreId
             };
             _context.Inventories.Add(newInventory);
@@ -55,7 +55,7 @@ namespace InventoryControlSystemAPI.Services
             {
                 return null;
             }
-            existingInventory.Count = updatedInventory.Count;
+            // existingInventory.Count = updatedInventory.Count;
             await _context.SaveChangesAsync();
             return existingInventory;
         }
