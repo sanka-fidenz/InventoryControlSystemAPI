@@ -46,19 +46,6 @@ namespace InventoryControlSystemAPI.Controllers
             return CreatedAtAction(nameof(GetInventory), new { id = inventory.Id }, inventory);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateInventory(string id, InventoryUpdateDto updatedInventory)
-        {
-            var inventory = await _inventoryService.UpdateInventory(id, updatedInventory);
-
-            if (inventory == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(inventory);
-        }
-
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocation(string id)
         {

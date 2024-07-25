@@ -21,10 +21,6 @@ namespace InventoryControlSystemAPI.Services
             {
                 query = query.Where(inventory => inventory.StoreId == storeId);
             }
-            // if (!string.IsNullOrEmpty(productId))
-            // {
-            //     query = query.Where(inventory => inventory.ProductId == productId);
-            // }
 
             return await query.ToListAsync();
         }
@@ -39,25 +35,11 @@ namespace InventoryControlSystemAPI.Services
             var newInventory = new Inventory
             {
                 Id = Guid.NewGuid().ToString(),
-                // Count = inventory.Count,
-                // ProductId = inventory.ProductId,
                 StoreId = inventory.StoreId
             };
             _context.Inventories.Add(newInventory);
             await _context.SaveChangesAsync();
             return newInventory;
-        }
-
-        public async Task<Inventory?> UpdateInventory(string id, InventoryUpdateDto updatedInventory)
-        {
-            var existingInventory = await GetInventory(id);
-            if (existingInventory == null)
-            {
-                return null;
-            }
-            // existingInventory.Count = updatedInventory.Count;
-            await _context.SaveChangesAsync();
-            return existingInventory;
         }
 
         public async Task<bool> DeleteInventory(string id)
